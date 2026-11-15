@@ -441,16 +441,22 @@ describe('autoclaw（智谱 AutoClaw，2026-11-16）：带渠道前缀的 id 必
   })
 })
 
-describe('deepseek V4.1 Flash 的 -1017 版本号变体（2026-11-16）：与无后缀版本同键', () => {
+describe('deepseek 的日期快照后缀（-1017 / -0813）：归到对应无后缀键', () => {
   /**
-   * 实测来源：用户实例 `/v1/models` 全量目录（337 条）。
+   * 实测来源（2026-11-16，**真发请求**，不是看名字推的）：
    *
-   * - modelscope 同时给了 `…/DeepSeek-V4.1-Flash` 与 `…/DeepSeek-V4.1-Flash-1017`，
-   *   两者展示名**逐字相同**（`DeepSeek-V4.1-Flash (魔搭)`）；
-   * - opencode 的**无后缀** id 展示名就是 `DeepSeek V4.1 Flash 1017`；
-   * - 只有 codearts 把 `-1017` 当独立模型（x0.12 vs x0.09）。
+   * | id | 结果 |
+   * | --- | --- |
+   * | `modelscope/…/DeepSeek-V4.1-Flash` | ❌ 502 ← 上游 400 `has no provider supported`（已下线） |
+   * | `modelscope/…/DeepSeek-V4.1-Flash-1017` | ✅ 200 |
+   * | `modelscope/…/DeepSeek-V4-Pro` | ❌ 502 ← 同上（已下线） |
+   * | `modelscope/…/DeepSeek-V4-Pro-0813` | ✅ 200 |
+   * | `codearts/deepseek-v4.1-flash` / `…-1017` | ✅ 两个都 200（两个独立条目，倍率不同） |
    *
-   * ⇒ `-1017` 是 V4.1-Flash 的**当前版本号**，不是另一个模型。
+   * ⚠️ 由此**不能**推出「无后缀 == 后缀」：modelscope 上无后缀已下线、后缀在服务；
+   *    codearts 上两者并存（旧版/新版），且 `-0813` 属 benefit 组
+   *    （`llm-adapter.ts` 实测「不能互相替代」）。
+   *    结论只是：**后缀那条是该渠道当前在服务的同一个模型** ⇒ 归到同一虚拟模型。
    */
   it('★ codearts 的 `…-1017` 归到 `deepseek-v4-1-flash`', () => {
     const got = canonicalKeyFor('codearts', 'deepseek-v4.1-flash-1017', 'DeepSeek-V4.1-Flash-1017 · x0.12')
@@ -470,17 +476,27 @@ describe('deepseek V4.1 Flash 的 -1017 版本号变体（2026-11-16）：与无
     expect(got?.key).toBe(canonicalKeyFor('modelscope', 'deepseek-ai/DeepSeek-V4.1-Flash', 'DeepSeek-V4.1-Flash (魔搭)')?.key)
   })
 
-  it('⚠️ 不许写成「剥 -NNNN 后缀」的通用规则：0731 / 0813 是独立模型', () => {
-    // `deepseek-v4-flash-0731` 是 **V4-Flash（上一代）** 的快照，
-    // `deepseek-v4-pro-0813` 是 V4 Pro 的快照 —— 都与无后缀版本是不同模型。
-    // 若哪天有人把上面的补丁改成通用剥离，这两条会立刻变红。
+  it('★ modelscope 的 `…/DeepSeek-V4-Pro-0813` 归到 `deepseek-v4-pro`', () => {
+    // 同型：modelscope 的 V4-Pro 只有 `-0813` 这条能调（无后缀那条实测 502/400 已下线），
+    // 不并的话主行里挂着一个必然失败的候选，而能用的那条单独成一列。
+    const got = canonicalKeyFor('modelscope', 'deepseek-ai/DeepSeek-V4-Pro-0813', 'DeepSeek-V4-Pro-0813 (魔搭)')
+    expect(got?.key).toBe('deepseek-v4-pro')
+    expect(got?.via).toBe('patch')
+    expect(got?.key).toBe(canonicalKeyFor('modelscope', 'deepseek-ai/DeepSeek-V4-Pro', 'DeepSeek-V4-Pro (魔搭)')?.key)
+  })
+
+  it('⚠️ 只合并**已登记**的后缀：未登记的（0731 / -official）仍是独立键', () => {
+    // 这条守卫钉的是「不许把补丁改写成通用剥 `-NNNN`」——
+    // `deepseek-v4-flash-0731` 目前**没有**登记（V4-Flash 的另一个 build，
+    // 是否并入等用户确认），一旦有人加通用剥离规则，这里会立刻变红。
     expect(canonicalKeyFor('modelscope', 'deepseek-ai/DeepSeek-V4-Flash-0731', 'DeepSeek-V4-Flash-0731 (魔搭)')?.key)
       .toBe('deepseek-v4-flash-0731')
-    expect(canonicalKeyFor('modelscope', 'deepseek-ai/DeepSeek-V4-Pro-0813', 'DeepSeek-V4-Pro-0813 (魔搭)')?.key)
-      .toBe('deepseek-v4-pro-0813')
     // 反过来：V4-Flash 无后缀那条仍然是它自己的键，没被 0731 拖走
     expect(canonicalKeyFor('buddy', 'deepseek-v4-flash', 'Deepseek-V4-Flash · x0.17')?.key)
       .toBe('deepseek-v4-flash')
+    // badge 型后缀同理（trae 的官方通道，倍率不同）
+    expect(canonicalKeyFor('trae', 'DeepSeek-V4-Pro-Official', 'DeepSeek-V4-Pro · x0.72→x0.36')?.key)
+      .toBe('deepseek-v4-pro-official')
   })
 
   it('⚠️ 新加坡区 `-sg` 仍是独立键（不许因为「都是 V4.1 Flash」而合并）', () => {
