@@ -315,7 +315,9 @@ describe('★ index.ts 的能力注册表接线（行为断言，替代源码文
     // ⚠️ **刻意不含 `opencode`**：它虽然也在 `probeById` 里且无 runtime，
     //   但那是**存量缺陷**（master 上就如此），修它会牵动另一批守卫，不在本次
     //   范围内 ⇒ 下面仍显式断言它不得有 runtime，把这条缺口**如实留在这里**。
-    const PROBE_ONLY_NO_AUTH = ['codely']
+    // codely 与 doubao 无 auth 服务（authIds 来自本文件顶部的 AUTH_SERVICE_OF，未含两者），
+    // 但均已注册进能力注册表（codely 有 probe/credits，doubao 有 credits/expiry）。
+    const PROBE_ONLY_NO_AUTH = ['codely', 'doubao']
     expect(ids).toEqual([...new Set([...authIds, ...PROBE_ONLY_NO_AUTH])].sort())
     // opencode 凭据是静态 API key，没有续期概念 ⇒ 刻意不注册（见设计文档 §3.3）。
     expect(ids).not.toContain('opencode')
@@ -482,9 +484,10 @@ describe('★ index.ts 的能力注册表接线（行为断言，替代源码文
     //   「重测」必报「codely 没有探测适配器」）。⇒ 反向断言同样要把它算进来，
     //   否则「修好了」这件事本身会让本条变红。理由与上面那条用例同源。
     // ⚠️ 2026-10-22（A6）：codely 现已翻 `channel: true` 并接入 auth ⇒ 它**已在**
-    //    `shouldRegister` 里，不得再额外加 `'codely'`（会重复。旧写法是它当时
-    //    无 auth 却有 runtime 的补丁；现在两者同源）。
-    ).toEqual([...shouldRegister].sort())
+    //    `shouldRegister` 里，不得再额外加 `'codely'`（会重复）。
+    // doubao 为浏览器 Cookie 导入型渠道，没有 XxxAuth 服务（不在 shouldRegister 中），
+    // 但已注册 credits + expiry 运行时能力。
+    ).toEqual([...shouldRegister, 'doubao'].sort())
   })
 })
 

@@ -81,6 +81,7 @@ import { PROVIDER_REGISTRY } from '../../src/provider-registry.js'
 export const AUTH_EXEMPT: ReadonlyMap<string, string> = new Map([
   ['opencode', '它的 RPC 由 handleMethod 统一分派到 handleOpencodeRpc，没有 XxxAuth 服务'],
   ['aggregate', '它没有账号 / 凭据 / 续期（registry 的 channel: false）'],
+  ['doubao', '浏览器 Cookie 导入型渠道，没有 XxxAuth 服务与 refresh 端点'],
 ])
 
 /**

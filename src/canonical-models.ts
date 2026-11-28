@@ -227,6 +227,32 @@ const TODAY_CANONICAL_OVERRIDES: Readonly<Record<string, string>> = Object.freez
 })
 
 /**
+ * 豆包（`doubao`）的规范键补丁。
+ * 豆包远端 / 兜底目录使用的是数字代号与 `person-*-YYYYMMDD` 前后缀 id，
+ * 这里显式归入跨渠道既有的规范键，避免拆成孤立虚拟模型。
+ */
+const DOUBAO_CANONICAL_OVERRIDES: Readonly<Record<string, string>> = Object.freeze({
+  '0': 'doubao-fast',
+  '3': 'doubao-expert',
+  '9': 'doubao-auto',
+  'seed-lite-7b': 'doubao-2-1-lite',
+  '5': 'doubao-2-1-pro',
+  'person-deepseek-v4-1-flash-261017': 'deepseek-v4-1-flash',
+  'person-deepseek-v4-pro-ga-260813': 'deepseek-v4-pro',
+  'person-glm-5-3-261111': 'glm-5-3',
+  'person-glm-5-3-flash-261111': 'glm-5-3-flash',
+  'person-glm-5-4': 'glm-5-4',
+  'person-qwen3-8-max': 'qwen3-8-max',
+  'person-qwen3-8-flash': 'qwen3-8-flash',
+  'person-qwen4-max': 'qwen4-max',
+  'person-kimi-k3-261111': 'kimi-k3',
+  'person-kimi-k3-1-pro-261111': 'kimi-k3-1-pro',
+  'person-kimi-k3-1-pro-highspeed-261111': 'kimi-k3-1-pro-highspeed',
+  'person-mimo-v2-6-pro': 'mimo-v2-6-pro',
+  'person-mimo-v2-6-flash': 'mimo-v2-6-flash',
+})
+
+/**
  * 显式映射补丁：`provider → realId → 规范键`。
  *
  * ## 什么时候需要它
@@ -431,6 +457,7 @@ export const CANONICAL_OVERRIDES: Readonly<Record<string, Readonly<Record<string
     }),
     today: TODAY_CANONICAL_OVERRIDES,
     todayintl: TODAY_CANONICAL_OVERRIDES,
+    doubao: DOUBAO_CANONICAL_OVERRIDES,
   })
 
 /**
@@ -578,6 +605,17 @@ const CANONICAL_NAMES: Readonly<Record<string, string>> = Object.freeze({
   'doubao-seed-2-1-turbo-260628': 'Doubao Seed 2.1 Turbo',
   'doubao-seed-2-0-code-preview-260215': 'Doubao Seed 2.0 Code Preview',
   'deepseek-v4-flash-official': 'DeepSeek V4 Flash Official',
+  'doubao-fast': '豆包 快速',
+  'doubao-expert': '豆包 专家',
+  'doubao-auto': '豆包 2.1 Auto',
+  'doubao-2-1-lite': '豆包 2.1 Lite',
+  'doubao-2-1-pro': '豆包 2.1 Pro',
+  'glm-5-4': 'GLM-5.4',
+  'qwen4-max': 'Qwen4-Max',
+  'kimi-k3-1-pro': 'Kimi-K3.1-Pro',
+  'kimi-k3-1-pro-highspeed': 'Kimi-K3.1-Pro-Highspeed',
+  'mimo-v2-6-pro': 'MiMo-V2.6-Pro',
+  'mimo-v2-6-flash': 'MiMo-V2.6-Flash',
 })
 
 /** 规范键 → 展示名；未登记的回退为键本身（不编造）。 */

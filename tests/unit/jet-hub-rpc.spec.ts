@@ -5032,34 +5032,45 @@ describe('provider.status / provider.setEnabled 端点', () => {
 
   describe('provider.setEnabled（关闭方向）', () => {
   describe('空目录渠道的关闭（PR #81：没有模型 ≠ 不能关闭）', () => {
-    it('★★★ doubao 关闭成功：只落关闭意图，不动黑名单', async () => {
-      const { call, storedDisabled, storedAccounts } = setup({
+    it('★★★ channel:false 且无适配器（aggregate）关闭成功：只落关闭意图，不动黑名单', async () => {
+      const { call, storedDisabled } = setup({
         withAdapter: false,
         catalog: [{ id: 'unused', name: 'Unused' }],
-        accounts: [{ id: 'a1', provider: 'doubao', enabled: true }],
+        accounts: [],
       })
-      const result = await call('provider.setEnabled', { provider: 'doubao', enabled: false })
+      const result = await call('provider.setEnabled', { provider: 'aggregate', enabled: false })
       // `models: 0` 是必须的（没有任何模型被写进黑名单），不能报成「关掉了 1 个」。
-      expect(result).toMatchObject({ ok: true, value: { provider: 'doubao', enabled: false, models: 0 } })
+      expect(result).toMatchObject({ ok: true, value: { provider: 'aggregate', enabled: false, models: 0 } })
       // 黑名单必须**原样不动** —— 目录快照里根本没有它的模型，写进去就是凭空造数据。
-      expect(storedDisabled().doubao ?? null).toBeNull()
-      // 渠道关掉的可见后果是「账号停用」，这一腿必须有。
-      expect(storedAccounts().every((account) => account.enabled === false)).toBe(true)
-      const status = await call('provider.status', { providers: ['doubao'] })
-      expect(status.value.statuses.doubao.closed).toBe(true)
+      expect(storedDisabled().aggregate ?? null).toBeNull()
+      const status = await call('provider.status', { providers: ['aggregate'] })
+      expect(status.value.statuses.aggregate.closed).toBe(true)
     })
 
     it('★★ 打开方向：清掉意图后渠道恢复可点', async () => {
       const { call } = setup({
         withAdapter: false,
         catalog: [{ id: 'unused', name: 'Unused' }],
-        accounts: [{ id: 'a1', provider: 'doubao', enabled: false }],
+        accounts: [],
       })
-      await call('provider.setEnabled', { provider: 'doubao', enabled: false })
-      expect((await call('provider.status', { providers: ['doubao'] })).value.statuses.doubao.closed).toBe(true)
-      const reopened = await call('provider.setEnabled', { provider: 'doubao', enabled: true })
-      expect(reopened).toMatchObject({ ok: true, value: { provider: 'doubao', enabled: true } })
-      expect((await call('provider.status', { providers: ['doubao'] })).value.statuses.doubao.closed).toBe(false)
+      await call('provider.setEnabled', { provider: 'aggregate', enabled: false })
+      expect((await call('provider.status', { providers: ['aggregate'] })).value.statuses.aggregate.closed).toBe(true)
+      const reopened = await call('provider.setEnabled', { provider: 'aggregate', enabled: true })
+      expect(reopened).toMatchObject({ ok: true, value: { provider: 'aggregate', enabled: true } })
+      expect((await call('provider.status', { providers: ['aggregate'] })).value.statuses.aggregate.closed).toBe(false)
+    })
+
+    it('★★★ 已接入模型目录的 channel:true 渠道（doubao）必须走目录核实，缺失适配器时拒绝', async () => {
+      const { call, storedDisabled } = setup({
+        providerId: 'doubao',
+        withAdapter: false,
+        catalog: [{ id: '0', name: '豆包 快速' }],
+        listModelsError: 'no adapter registered for provider "doubao"',
+        accounts: [{ id: 'd1', provider: 'doubao', enabled: true }],
+      })
+      const result = await call('provider.setEnabled', { provider: 'doubao', enabled: false })
+      expect(result.ok).toBe(false)
+      expect(storedDisabled().doubao ?? null).toBeNull()
     })
 
     it('★★★ 有适配器的 channel:false 渠道（codely）必须仍走远端核实，不许跳到短路腿', async () => {
@@ -5440,19 +5451,17 @@ describe('provider.status / provider.setEnabled 端点', () => {
      * **压根不去读**（`noModelLeg` 短路），只落关闭意图 + 停账号。
      * 本用例把 llm 设成「一读就抛」，用来锁死「没有调用 listModels」这条行为。
      */
-    it('⚠️ doubao（channel:false 且无适配器）→ 不读目录，关闭成功', async () => {
-      const { call, storedAccounts } = setup({
-        listModelsError: 'no adapter registered for provider "doubao"',
-        accounts: [{ id: 'd1', provider: 'doubao', enabled: true }],
+    it('⚠️ channel:false 且无适配器（aggregate）→ 不读目录，关闭成功', async () => {
+      const { call } = setup({
+        listModelsError: 'no adapter registered for provider "aggregate"',
+        accounts: [],
       })
-      const result = await call('provider.setEnabled', { provider: 'doubao', enabled: false })
-      expect(result.ok, '纯签到渠道关闭不得再报 no adapter（正是真机第二轮的报障）').toBe(true)
+      const result = await call('provider.setEnabled', { provider: 'aggregate', enabled: false })
+      expect(result.ok, 'noModelLeg 渠道关闭不得走远端 listModels').toBe(true)
       const value = result.value as { models?: number, accounts?: number }
       expect(value.models, '没有模型可关 ⇒ 照实报 0').toBe(0)
-      expect(value.accounts).toBe(1)
-      expect(storedAccounts()[0].enabled).toBe(false)
-      const status = await call('provider.status', { providers: ['doubao'] })
-      const entry = (status.value as { statuses: Record<string, { models: { total: number, disabled: number }, closed: boolean }> }).statuses.doubao
+      const status = await call('provider.status', { providers: ['aggregate'] })
+      const entry = (status.value as { statuses: Record<string, { models: { total: number, disabled: number }, closed: boolean }> }).statuses.aggregate
       expect(entry.models).toEqual({ total: 0, disabled: 0 })
       expect(entry.closed, '关闭意图腿必须报 closed:true（否则开关弹回已打开）').toBe(true)
     })

@@ -106,7 +106,7 @@ const EXPECTED_WIRED = [
   //    有余额即 `NEVER`、烧光即 `UNUSABLE`。
   //    ⚠️ 三处必须同改：本清单 + `WIRED_EXPIRY_PROVIDERS` + `createProviderExpiry()`。
   //    ⚠️ 两站各占一项：账池不互通、域名族不同（`*.agnes-ai.cn` / `*.agnes-ai.com`）。
-  'accio', 'agnescode', 'agnescodeintl', 'astudio', 'autoclaw', 'autoclawintl', 'baizhi', 'buddy', 'codearts',
+  'accio', 'agnescode', 'agnescodeintl', 'astudio', 'autoclaw', 'autoclawintl', 'baizhi', 'buddy', 'codearts', 'doubao',
   'lobsterai', 'loomy', 'magicrew', 'magicrewintl', 'marvis', 'minimax', 'minimaxintl',
   'modelscope', 'monkeycode', 'monkeycodeintl', 'officeace', 'qoder', 'qodercn',
   'today', 'todayintl', 'trae', 'workbuddy', 'zcode',
@@ -601,5 +601,12 @@ describe('★★ 不变式二：折算真的分派给 runtime（哨兵注入，�
     })
     expect(await createExpiryProbe(poolWithAccount(), async () => 'm1')('trae')).toBe(sentinel)
     expect(await createExpiryProbe(poolWithAccount(), async () => 'm1')('loomy')).toBe(NEVER)
+  })
+
+  it('★ doubao 三处同时接线：WIRED_EXPIRY_PROVIDERS / createProviderExpiry / runtime', () => {
+    expect(WIRED_EXPIRY_PROVIDERS).toContain('doubao')
+    expect(createProviderExpiry().doubao).toBeDefined()
+    applyOnce()
+    expect(runtimeOf('doubao')?.expiry).toBeDefined()
   })
 })

@@ -272,7 +272,8 @@ describe('签到能力：registry 声明与 runtime 实现必须一致', () => {
     // `setting_info` 结算）⇒ 17 → 19。
     // ⚠️ 这两条来自两个不同 PR（#87 / #88），各自只把自己的那一家算进 18 ——
     //    合并后两家都在，所以是 19。改这里的数字前先跑一遍本用例。
-    expect(checked.length, '没有任何渠道被检查 = 本用例什么都没守').toBe(19)
+    // ⚠️ doubao（豆包）已翻 `channel: true` 并接入 runtime（`credits` 含 `claim`）⇒ 19 → 20。
+    expect(checked.length, '没有任何渠道被检查 = 本用例什么都没守').toBe(20)
 
     /**
      * ⚠️⚠️ **只数数量挡不住「删一家 + 加一家」** —— 数量不变就静默通过，

@@ -11434,6 +11434,7 @@ const AGG_WIRED_CHANNEL_IDS = [
   'monkeycode', 'monkeycodeintl', 'baizhi', 'marvis',
   'agnescode', 'agnescodeintl',
   'today', 'todayintl',
+  'doubao',
 ];
 
 /**

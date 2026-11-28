@@ -7737,6 +7737,17 @@ async function fetchBalanceReading(
     })
   }
 
+  // 豆包（doubao）：无 XxxAuth 服务与续期端点，但有真实余额与临期折算 ⇒ 单独挂上
+  // credits / expiry runtime 域（与 codely 同型：`ProviderRuntime.auth` 可选）。
+  const doubaoRuntimeDescriptor = descriptorOf('doubao')
+  if (doubaoRuntimeDescriptor !== undefined) {
+    registerProviderRuntime({
+      descriptor: doubaoRuntimeDescriptor,
+      credits: creditsOf(creditsTable, 'doubao'),
+      expiry: expiryOf(expiryTable, 'doubao'),
+    })
+  }
+
   }
 
   /**

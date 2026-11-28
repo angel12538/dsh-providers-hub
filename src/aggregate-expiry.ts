@@ -103,6 +103,8 @@ import type { QoderCredential } from './qoder.js'
 import { fetchMinimaxCreditBalanceDetailed } from './minimax-credits.js'
 import type { MinimaxProduct } from './minimax-product.js'
 import type { MinimaxCredential } from './minimax.js'
+import { fetchDoubaoBalanceDetailed } from './doubao-credits.js'
+import type { DoubaoCredential } from './doubao.js'
 import { runtimeOf, type ProviderExpiryContext } from './provider-runtime.js'
 
 /**
@@ -348,6 +350,7 @@ export const WIRED_EXPIRY_PROVIDERS: readonly string[] = Object.freeze([
   //    折算原语：`provider-expiry.ts` 的 `magicrewintl` 条目 → 同一个 `magicrewExpiry`，
   //    但**必须传 `MAGICREW_INTL`**（传国内版会拿国内基址查国际账号余额）。
   'magicrewintl',
+  'doubao',
 ])
 
 /**
@@ -1687,6 +1690,21 @@ export async function baizhiExpiry(
     cached,
     async () => {
       const result = await fetchBaizhiBalanceDetailed(credential, product)
+      return result.balance
+    },
+  ))
+}
+
+/** 豆包渠道临期额度折算：使用扣费包唯一到期时间；无扣费包或无法判定时退回永不过期。 */
+export function doubaoExpiry(
+  credential: DoubaoCredential,
+  cached?: () => Promise<CreditBalance | null | undefined>,
+  fetchImpl?: typeof fetch,
+): Promise<number> {
+  return sharedPackageExpiry(() => fetchBalanceWithCache(
+    cached,
+    async () => {
+      const result = await fetchDoubaoBalanceDetailed(credential, { fetchImpl })
       return result.balance
     },
   ))

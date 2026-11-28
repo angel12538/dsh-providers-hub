@@ -754,7 +754,18 @@ export class DoubaoAdapter extends LlmAdapter {
   }
 
   private toCatalogEntry(model: DoubaoRemoteModel): CatalogEntry {
-    const suffix = doubaoTagSuffix(model.tags)
+    // 仓内聚合倍率口径为 ` · x{n}`（x 在数字前），上游标签为 `0.65x` / `限时优惠 0.01x`，
+    // 目录层在保留协议原文的同时将倍率规整为 `x0.65` / `限时优惠 · x0.01` 以便 priceFactorFromName 解析。
+    const normalizedTags = model.tags
+      .map((tag) => {
+        const trimmed = tag.trim()
+        const m = /^(.*?)\s*(\d+(?:\.\d+)?)\s*[×x]$/i.exec(trimmed)
+        if (m === null) return trimmed
+        const prefix = m[1]!.trim()
+        const rate = `x${m[2]!}`
+        return prefix.length > 0 ? `${prefix} · ${rate}` : rate
+      })
+    const suffix = doubaoTagSuffix(normalizedTags)
     return {
       id: model.key,
       name: model.name + (suffix === undefined ? '' : ' · ' + suffix),

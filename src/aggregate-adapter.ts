@@ -1473,6 +1473,9 @@ export class AggregateAdapter extends LlmAdapter {
     //    （折算原语 `marvisExpiry`，属「有余额但不下发到期时间」那一类：
     //    有余额即 `NEVER`、烧光即 `UNUSABLE`）。
     'marvis',
+    // ⚠️ 豆包（doubao，2026-11-28）：已接入模型目录、余额与临期折算，三处同改
+    //    （本数组 + `WIRED_EXPIRY_PROVIDERS` + `createProviderExpiry()`）。
+    'doubao',
   ])
 
   /**

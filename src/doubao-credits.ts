@@ -287,10 +287,12 @@ function summaryNameOf(summary: DoubaoQuotaSummary): string {
 function packageExpiryOf(endTimes: readonly number[] | undefined): {
   expiredTime: string
   expiryUnknown: boolean
+  deductionEndTime?: number
 } {
   const unique = [...new Set((endTimes ?? []).filter((value) => Number.isFinite(value) && value > 0))]
   if (unique.length === 1) {
-    return { expiredTime: new Date(unique[0] as number).toISOString(), expiryUnknown: false }
+    const ms = unique[0] as number
+    return { expiredTime: new Date(ms).toISOString(), expiryUnknown: false, deductionEndTime: ms }
   }
   return { expiredTime: '', expiryUnknown: true }
 }

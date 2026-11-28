@@ -400,9 +400,10 @@ describe('★ registerJetHubRpc 的命名对象接线（真跑 apply + account.r
     }
     // aggregate 的豁免判据是 registry 自己声明的 `channel: false`（可测量）。
     expect(descriptorOf('aggregate')?.channel, 'aggregate 的豁免理由是「没有账号/凭据」').toBe(false)
-    // opencode 是 `channel: true` 却仍然不占键位 ⇒ 它的豁免**只能**来自
-    // 「RPC 走 handleOpencodeRpc」这条实现事实，故它是硬编码豁免而非 registry 派生。
+    // opencode 与 doubao 是 `channel: true` 却不占 auth 键位：
+    // opencode 走 handleOpencodeRpc；doubao 为浏览器 Cookie 导入，无 XxxAuth 服务。
     expect(descriptorOf('opencode')?.channel).toBe(true)
+    expect(descriptorOf('doubao')?.channel).toBe(true)
   })
 
   it('★★ 每个 provider id 的续期都分派到**自己**的 auth 实例（错接即红）', async () => {

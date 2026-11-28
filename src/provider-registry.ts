@@ -1203,20 +1203,10 @@ export const PROVIDER_REGISTRY: readonly ProviderDescriptor[] = Object.freeze([
     // ⚠️ 不登记 accountTest / creditPackages / permanentLock / usesExpiryWindow
     //    —— 全部省略 = false，与「上游未实测、不编造数据」的口径一致。
     //
-    // ⚠️⚠️ **`channel: false`（与 codely 当年「UI 先行阶段」同型）**：签到已接通，
-    //    但本渠道**没有模型目录 / 适配器 / auth 服务**（纯签到渠道，无推理链路）。
-    //    `channel: true` 会点燃 `refresh-targets-derived.spec.ts` 的「channel ⇒ 必须有
-    //    modelAdapters 目录」守卫（报错「关闭 provider 后模型仍可选」），而 doubao 根本
-    //    没有目录可关。`credits` 的两个判据都独立于 `channel`：`dailyCheckin: true`
-    //    让签到入口照常出现（`checkinProviders()` 按 `supportsDailyCheckin` 过滤），
-    //    `balance: true` 让豆包进 credits 表（签到的 `claim` 走同一张表）。
-    // ⚠️ 2026-11-22 更正：模型目录/适配器已接通（src/doubao-adapter.ts），
-    //    已进 modelAdapters 表 ⇒ 运行时 noModelLeg 门（channel===false AND
-    //    modelAdapters[provider]===undefined）不成立，模型腿照常读取、对话照常路由。
-    //    这里**刻意保持 false**：豆包凭据是 cookie（无 refresh 端点、无 auth 服务），
-    //    翻 true 会点燃「channel ⇒ 必须有 auth/聚合/续期」三张派生守卫（与 codely 当年
-    //    channel:false 但有目录的形态同型）。签到与余额两条腿独立于 channel。
-    channel: false,
+    // ⚠️ 2026-11-28：豆包已接通模型目录/适配器、推理、余额（含真实 end_time 到期日）
+    //    以及聚合路由与临期折算，翻为 `channel: true`（仅因浏览器 Cookie 凭据无
+    //    `XxxAuth` 服务与 refresh 端点而在 `AUTH_EXEMPT` 中登记豁免）。
+    channel: true,
   },
 
   {

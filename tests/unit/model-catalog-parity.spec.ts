@@ -85,6 +85,7 @@ import { parseAgnescodeCredential } from '../../src/agnescode.js'
 import { TodayAdapter } from '../../src/today-adapter.js'
 import { TODAY, TODAY_INTL } from '../../src/today-product.js'
 import { parseTodayCredential } from '../../src/today.js'
+import { DoubaoAdapter } from '../../src/doubao-adapter.js'
 // ⚠️ **本 fork 独有**（qiniu/七牛云，2026-10-29）。
 import { QiniuAdapter } from '../../src/qiniu-adapter.js'
 import { CodelyAdapter } from '../../src/codely-adapter.js'
@@ -958,6 +959,13 @@ id: 'autoclaw',
         } as never),
       }
     }),
+    {
+      id: 'doubao',
+      make: () => new DoubaoAdapter({
+        ...NO_CRED,
+        slots: async () => [],
+      } as never),
+    },
   ]
 
   /**
@@ -1058,7 +1066,8 @@ id: 'autoclaw',
     // ⚠️ 2026-11-09 加 marvis（腾讯 Marvis，`channel: true`）⇒ 28 → 29。
     // ⚠️ 2026-11-19 加 agnescode + agnescodeintl（AgnesCode 两站）⇒ 29 → 31。
     // ⚠️ 加 today + todayintl（Today 两站）⇒ 31 → 33。
-    expect(CASES).toHaveLength(33)
+    // ⚠️ 加 doubao（豆包翻 channel: true 接入聚合路由）⇒ 33 → 34。
+    expect(CASES).toHaveLength(34)
   })
 
   it('★★ `catalog` 具备 `refresh` 的家，适配器上必须**存在** `refresh` 成员（转发接线）', () => {
@@ -1113,9 +1122,9 @@ id: 'autoclaw',
     //       **共用适配器类**，因此同样继承了 config 回调与转发（实测由本断言自己找出）。
     expect(
       forwarding.sort(),
-      '这 19 家必须都接入后台刷新（改这条名单前请先读 be42b25 与本轮修正的注释）',
+      '这 20 家必须都接入后台刷新（改这条名单前请先读 be42b25 与本轮修正的注释）',
     ).toEqual([
-      'accio', 'astudio', 'baizhi', 'buddy', 'codearts', 'lobsterai', 'loomy',
+      'accio', 'astudio', 'baizhi', 'buddy', 'codearts', 'doubao', 'lobsterai', 'loomy',
       'magicrew', 'magicrewintl', 'minimax', 'minimaxintl', 'monkeycode',
       'monkeycodeintl', 'qoder', 'qodercn', 'raccoon', 'trae', 'workbuddy', 'zcode',
     ])

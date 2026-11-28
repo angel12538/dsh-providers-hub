@@ -35,6 +35,8 @@ describe('priceFactorFromName（必须要求分隔符，否则模型名里的 x 
   it('真实倍率标注能解析（含促销箭头，取右侧）', () => {
     expect(priceFactorFromName('DeepSeek V4 Flash 0731 · x3.0')).toBe(3)
     expect(priceFactorFromName('GLM-5-3-Flash · x0.2→x0.1')).toBe(0.1)
+    expect(priceFactorFromName('豆包 2.1 Lite · 限时优惠 · x0.01')).toBe(0.01)
+    expect(priceFactorFromName('豆包 2.1 Pro · x0.65')).toBe(0.65)
   })
 
   it('「免费」按 0 算', () => {

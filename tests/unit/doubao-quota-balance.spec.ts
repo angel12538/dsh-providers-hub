@@ -276,11 +276,12 @@ describe('fetchDoubaoBalanceDetailed', () => {
       },
     })
 
-    // ① 唯一值 ⇒ 真实日期
+    // ① 唯一值 ⇒ 真实日期（含供 sharedPackageExpiry 排序用的 deductionEndTime）
     const unique = doubaoBalanceFromOverviewPayload(
       make([{ total_amount: '1,000', used_amount: '0', end_time: endA }]) as never,
     )
     expect(unique.packages[0]?.expiredTime, '唯一 end_time 必须被采用').toBe(new Date(endA).toISOString())
+    expect(unique.packages[0]?.deductionEndTime, '唯一 end_time 必须写入 deductionEndTime 供聚合临期排序').toBe(endA)
     expect(unique.packages[0]?.expiryUnknown, '既然拿到了真实日期，就不是「到期未知」').toBe(false)
 
     // ② 多个不同值 ⇒ 到期未知（不取最早/最晚）
